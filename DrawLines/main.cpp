@@ -90,6 +90,8 @@ int main(int argc, char* argv[])
         
         int mouseXposition;
         
+        bool wasDrawn = false;
+
         for (int row = 0; row < rows; ++row) {
             for(int column = 0; column < columns; ++column) {
                 SDL_Rect squareRect;
@@ -99,8 +101,9 @@ int main(int argc, char* argv[])
                 squareRect.x = (block_width + (borderWidth)) * column;  // X position
                 squareRect.y = (block_height + borderWidth) * row + (borderWidth/2);  // Y position
                 
-                if (abs(squareRect.x - player.x) < ((block_width / 2) + borderWidth) && abs(squareRect.y - player.y) < ((block_width / 2) + borderWidth)) {
+                if (wasDrawn == false && abs(squareRect.x - player.x) < ((block_width / 2) + borderWidth) && abs(squareRect.y - player.y) < ((block_width / 2) + borderWidth)) {
                     SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
+                    wasDrawn = true;
                 } else {
                     SDL_SetRenderDrawColor(renderer, 75, 125, 125, 255);
                 }
