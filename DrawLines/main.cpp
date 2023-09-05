@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     }
     
     SDL_Window* window = SDL_CreateWindow(
-                                          "SDL2 Window",           // Window title
+                                          "Line Drawing",           // Window title
                                           SDL_WINDOWPOS_CENTERED,  // Initial x position
                                           SDL_WINDOWPOS_CENTERED,  // Initial y position
                                           appSettings.SCREEN_WIDTH,                     // Width
