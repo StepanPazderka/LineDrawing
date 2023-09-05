@@ -54,6 +54,8 @@ int main(int argc, char* argv[])
     bool running = true;
     SDL_Event e;
     while (running) {
+        
+        
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 running = false;
@@ -64,12 +66,24 @@ int main(int argc, char* argv[])
         SDL_RenderClear(renderer);  // Clear the renderer
         
         // Set color for the square (for example, red)
-        SDL_SetRenderDrawColor(renderer, 75, 125, 125, 255);
+        
+        int mouseXposition;
+                
         
         for (int row = 0; row < rows; ++row) {
             for(int column = 0; column < columns; ++column) {
                 SDL_Rect squareRect;
+                
+                SDL_GetMouseState(&mouseXposition, nullptr);
+                
                 squareRect.x = (block_width + (borderWidth)) * column;  // X position
+                
+                if (abs(squareRect.x - mouseXposition) < ((block_width / 2) + borderWidth)) {
+                    SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
+                } else {
+                    SDL_SetRenderDrawColor(renderer, 75, 125, 125, 255);
+                }
+                
                 squareRect.y = (block_height + borderWidth) * row + (borderWidth/2);  // Y position
                 squareRect.w = block_width;  // Width
                 squareRect.h = block_height;  // Height
