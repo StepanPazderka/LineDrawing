@@ -8,27 +8,31 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
-
-const int borderWidth = 4;
-const int rows = 30, columns = 30;
-
 typedef struct {
     int x = 0;
     int y = 0;
 } playerPos;
 
-char matrix[rows][columns] = { };
+
+class AppSettings {
+    public:
+        const int SCREEN_WIDTH = 640;
+        const int SCREEN_HEIGHT = 480;
+        const int BORDER_WIDTH = 4;
+        static const int ROWS = 30, COLUMNS = 30;
+};
 
 int main(int argc, char* argv[])
 {
-    int block_width = (SCREEN_WIDTH / columns) - (borderWidth/2);
-    int block_height = (SCREEN_HEIGHT / rows) - (borderWidth/2);
+    AppSettings* appSettings = new AppSettings();
+ 
+    char matrix[AppSettings::ROWS][AppSettings::COLUMNS] = { };
+    int block_width = (appSettings->SCREEN_WIDTH / appSettings->COLUMNS) - (appSettings->BORDER_WIDTH/2);
+    int block_height = (appSettings->SCREEN_HEIGHT / appSettings->ROWS) - (appSettings->BORDER_WIDTH/2);
     
     playerPos player = playerPos();
-    player.x = SCREEN_WIDTH / 2;
-    player.y = SCREEN_HEIGHT / 2;
+    player.x = appSettings->SCREEN_WIDTH / 2;
+    player.y = appSettings->SCREEN_HEIGHT / 2;
     
     if (SDL_Init(SDL_INIT_VIDEO) != 0) { // Initialize SDL video subsystem
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -39,8 +43,8 @@ int main(int argc, char* argv[])
                                           "SDL2 Window",           // Window title
                                           SDL_WINDOWPOS_CENTERED,  // Initial x position
                                           SDL_WINDOWPOS_CENTERED,  // Initial y position
-                                          SCREEN_WIDTH,                     // Width
-                                          SCREEN_HEIGHT,                     // Height
+                                          appSettings->SCREEN_WIDTH,                     // Width
+                                          appSettings->SCREEN_HEIGHT,                     // Height
                                           SDL_WINDOW_SHOWN         // Flags (you can use SDL_WINDOW_FULLSCREEN, etc.)
                                           );
     
@@ -92,16 +96,16 @@ int main(int argc, char* argv[])
         
         bool wasDrawn = false;
 
-        for (int row = 0; row < rows; ++row) {
-            for(int column = 0; column < columns; ++column) {
+        for (int row = 0; row < appSettings->ROWS; ++row) {
+            for(int column = 0; column < appSettings->COLUMNS; ++column) {
                 SDL_Rect squareRect;
                 
                 SDL_GetMouseState(&mouseXposition, nullptr);
                 
-                squareRect.x = (block_width + (borderWidth)) * column;  // X position
-                squareRect.y = (block_height + borderWidth) * row + (borderWidth/2);  // Y position
+                squareRect.x = (block_width + (appSettings->BORDER_WIDTH)) * column;  // X position
+                squareRect.y = (block_height + appSettings->BORDER_WIDTH) * row + (appSettings->BORDER_WIDTH/2);  // Y position
                 
-                if (wasDrawn == false && abs(squareRect.x - player.x) < ((block_width / 2) + borderWidth) && abs(squareRect.y - player.y) < ((block_width / 2) + borderWidth)) {
+                if (wasDrawn == false && abs(squareRect.x - player.x) < ((block_width / 2) + appSettings->BORDER_WIDTH) && abs(squareRect.y - player.y) < ((block_width / 2) + appSettings->BORDER_WIDTH)) {
                     SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
                     wasDrawn = true;
                 } else {
@@ -121,6 +125,7 @@ int main(int argc, char* argv[])
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    delete appSettings;
     
     return 0;
 }
