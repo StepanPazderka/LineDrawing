@@ -24,15 +24,15 @@ class AppSettings {
 
 int main(int argc, char* argv[])
 {
-    AppSettings* appSettings = new AppSettings();
+    AppSettings appSettings;
  
     char matrix[AppSettings::ROWS][AppSettings::COLUMNS] = { };
-    int block_width = (appSettings->SCREEN_WIDTH / appSettings->COLUMNS) - (appSettings->BORDER_WIDTH/2);
-    int block_height = (appSettings->SCREEN_HEIGHT / appSettings->ROWS) - (appSettings->BORDER_WIDTH/2);
+    int block_width = (appSettings.SCREEN_WIDTH / appSettings.COLUMNS) - (appSettings.BORDER_WIDTH/2);
+    int block_height = (appSettings.SCREEN_HEIGHT / appSettings.ROWS) - (appSettings.BORDER_WIDTH/2);
     
     playerPos player = playerPos();
-    player.x = appSettings->SCREEN_WIDTH / 2;
-    player.y = appSettings->SCREEN_HEIGHT / 2;
+    player.x = appSettings.SCREEN_WIDTH / 2;
+    player.y = appSettings.SCREEN_HEIGHT / 2;
     
     if (SDL_Init(SDL_INIT_VIDEO) != 0) { // Initialize SDL video subsystem
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
                                           "SDL2 Window",           // Window title
                                           SDL_WINDOWPOS_CENTERED,  // Initial x position
                                           SDL_WINDOWPOS_CENTERED,  // Initial y position
-                                          appSettings->SCREEN_WIDTH,                     // Width
-                                          appSettings->SCREEN_HEIGHT,                     // Height
+                                          appSettings.SCREEN_WIDTH,                     // Width
+                                          appSettings.SCREEN_HEIGHT,                     // Height
                                           SDL_WINDOW_SHOWN         // Flags (you can use SDL_WINDOW_FULLSCREEN, etc.)
                                           );
     
@@ -96,16 +96,16 @@ int main(int argc, char* argv[])
         
         bool wasDrawn = false;
 
-        for (int row = 0; row < appSettings->ROWS; ++row) {
-            for(int column = 0; column < appSettings->COLUMNS; ++column) {
+        for (int row = 0; row < appSettings.ROWS; ++row) {
+            for(int column = 0; column < appSettings.COLUMNS; ++column) {
                 SDL_Rect squareRect;
                 
                 SDL_GetMouseState(&mouseXposition, nullptr);
                 
-                squareRect.x = (block_width + (appSettings->BORDER_WIDTH)) * column;  // X position
-                squareRect.y = (block_height + appSettings->BORDER_WIDTH) * row + (appSettings->BORDER_WIDTH/2);  // Y position
+                squareRect.x = (block_width + (appSettings.BORDER_WIDTH)) * column;  // X position
+                squareRect.y = (block_height + appSettings.BORDER_WIDTH) * row + (appSettings.BORDER_WIDTH/2);  // Y position
                 
-                if (wasDrawn == false && abs(squareRect.x - player.x) < ((block_width / 2) + appSettings->BORDER_WIDTH) && abs(squareRect.y - player.y) < ((block_width / 2) + appSettings->BORDER_WIDTH)) {
+                if (wasDrawn == false && abs(squareRect.x - player.x) < ((block_width / 2) + appSettings.BORDER_WIDTH) && abs(squareRect.y - player.y) < ((block_width / 2) + appSettings.BORDER_WIDTH)) {
                     SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
                     wasDrawn = true;
                 } else {
@@ -125,7 +125,6 @@ int main(int argc, char* argv[])
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    delete appSettings;
     
     return 0;
 }
