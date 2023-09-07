@@ -108,16 +108,14 @@ int main(int argc, char* argv[])
         bool drawnPlayer = false;
         bool drawnReticle = false;
         
+        
+        float posX = sin(float(player.x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
+        reticle.x = player.x + (posX * 100);
+        
+        float posY = sin(float(player.y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
+        reticle.y = player.y + (posY * 100);
+        
         for (int row = 0; row < appSettings.ROWS; ++row) {
-            
-            float posX = sin(float(player.x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
-            reticle.x = player.x + (posX * 100);
-            
-            float posY = sin(float(player.y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
-            reticle.y = player.y + (posY * 100);
-            
-//            std::cout << posX << std::endl;
-            
             for(int column = 0; column < appSettings.COLUMNS; ++column) {
                 SDL_Rect squareRect;
                 
