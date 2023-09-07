@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <math.h>
 
 typedef struct {
     int x = 0;
@@ -16,10 +17,10 @@ typedef struct {
 
 class AppSettings {
 public:
-    const int SCREEN_WIDTH = 640;
-    const int SCREEN_HEIGHT = 480;
-    const int BORDER_WIDTH = 4;
-    static const int ROWS = 30, COLUMNS = 30;
+    const int SCREEN_WIDTH = 1280;
+    const int SCREEN_HEIGHT = 800;
+    const int BORDER_WIDTH = 1;
+    static const int ROWS = 100, COLUMNS = 100;
 };
 
 int main(int argc, char* argv[])
@@ -37,6 +38,10 @@ int main(int argc, char* argv[])
     point cursor = point();
     cursor.x = player.x;
     cursor.y = player.y - (block_height * 5);
+    
+    point reticle = point();
+    reticle.x = 0;
+    reticle.y = 0;
     
     if (SDL_Init(SDL_INIT_VIDEO) != 0) { // Initialize SDL video subsystem
         std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
@@ -101,8 +106,18 @@ int main(int argc, char* argv[])
         
         bool drawnCursor = false;
         bool drawnPlayer = false;
+        bool drawnReticle = false;
         
         for (int row = 0; row < appSettings.ROWS; ++row) {
+            
+            float posX = sin(float(player.x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
+            reticle.x = player.x + (posX * 100);
+            
+            float posY = sin(float(player.y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
+            reticle.y = player.y + (posY * 100);
+            
+//            std::cout << posX << std::endl;
+            
             for(int column = 0; column < appSettings.COLUMNS; ++column) {
                 SDL_Rect squareRect;
                 
@@ -119,6 +134,9 @@ int main(int argc, char* argv[])
                 } else if ((abs(squareRect.x - cursor.x) < block_width) && (abs(squareRect.y - cursor.y) < block_height)&& !drawnCursor) { // Drawing mouse cursor
                     SDL_SetRenderDrawColor(renderer, 255, 25, 125, 255);
                     drawnCursor = true;
+                }  else if ((abs(squareRect.x - reticle.x) < block_width) && (abs(squareRect.y - reticle.y) < block_height)&& !drawnReticle) { // Drawing mouse cursor
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                    drawnReticle = true;
                 } else {
                     SDL_SetRenderDrawColor(renderer, 75, 125, 125, 255);
                 }
