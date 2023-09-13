@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7F5E512B2AA6A22F00EB4105 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F5E512A2AA6A22F00EB4105 /* libSDL2-2.0.0.dylib */; };
+		7F5E512B2AA6A22F00EB4105 /* libSDL2-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F5E512A2AA6A22F00EB4105 /* libSDL2-2.0.0.dylib */; settings = {ATTRIBUTES = (Weak, ); }; };
 		7F5E512C2AA6A23F00EB4105 /* libSDL2-2.0.0.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 7F5E512A2AA6A22F00EB4105 /* libSDL2-2.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7FF0906C2AA6060E00269FCD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7FF0906B2AA6060E00269FCD /* main.cpp */; };
 /* End PBXBuildFile section */

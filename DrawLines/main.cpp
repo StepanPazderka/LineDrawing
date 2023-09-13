@@ -8,12 +8,35 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <math.h>
+#include <vector>
+#include <functional>
 
-typedef struct {
+struct point{
     int x = 0;
     int y = 0;
-} point;
+};
 
+struct Color {
+    uint8_t red = 0;
+    uint8_t green = 0;
+    uint8_t blue = 0;
+};
+
+struct gameObject {
+    int id = 0;
+    int x = 0;
+    int y = 0;
+    Color color = Color{255, 255, 255};
+    std::function<void(gameObject&, const std::vector<SDL_Event>&)> updateClosure;
+    
+    void executeUpdate(const std::vector<SDL_Event>& events) {
+        if (updateClosure) {  // Check if the closure is assigned
+            updateClosure(*this, events);  // Execute the closure
+        } else {
+            std::cout << "Closure not set!\n";
+        }
+    }
+};
 
 class AppSettings {
 public:
@@ -23,11 +46,54 @@ public:
     static const int ROWS = 100, COLUMNS = 100;
 };
 
+class Scene {
+public:
+    int objectCounter = 0;
+    
+    std::vector<gameObject*> objects;
+    
+    void add(gameObject* object) {
+        object->id = this->objectCounter;
+        ++this->objectCounter;
+        objects.push_back(object);
+    }
+};
+
 int main(int argc, char* argv[])
 {
-    AppSettings appSettings;
+    std::vector<SDL_Event> events;
     
-    char matrix[AppSettings::ROWS][AppSettings::COLUMNS] = { };
+    AppSettings appSettings;
+    Scene* gameScene = new Scene();
+    gameObject* randomObject = new gameObject();
+    gameScene->add(randomObject);
+    
+    gameObject* playerObject = new gameObject();
+    playerObject->color = Color{0, 255, 0};
+    playerObject->x = appSettings.SCREEN_WIDTH / 2;
+    playerObject->y = appSettings.SCREEN_HEIGHT / 2;
+    playerObject->updateClosure = [](gameObject& gameObject, std::vector<SDL_Event> events) {
+        for(const SDL_Event& event: events) {
+            switch (event.key.keysym.sym) {
+                case SDLK_a:
+                    gameObject.x -= 20;
+                    break;
+                case SDLK_d:
+                    gameObject.x += 20;
+                    break;
+                case SDLK_w:
+                    gameObject.y -= 20;
+                    break;
+                case SDLK_s:
+                    gameObject.y += 20;
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+    gameScene->add(playerObject);
+    
     int block_width = (appSettings.SCREEN_WIDTH / appSettings.COLUMNS) - (appSettings.BORDER_WIDTH/2);
     int block_height = (appSettings.SCREEN_HEIGHT / appSettings.ROWS) - (appSettings.BORDER_WIDTH/2);
     
@@ -75,23 +141,13 @@ int main(int argc, char* argv[])
     bool running = true;
     SDL_Event event;
     while (running) {
+        const int FPS = 60;
+        const int FRAME_DELAY = 1000 / FPS;
+        
+        Uint32 frameStart = SDL_GetTicks();
+        events.clear();
         while (SDL_PollEvent(&event)) {
-            switch (event.key.keysym.sym) {
-                case SDLK_a:
-                    player.x -= 20;
-                    break;
-                case SDLK_d:
-                    player.x += 20;
-                    break;
-                case SDLK_w:
-                    player.y -= 20;
-                    break;
-                case SDLK_s:
-                    player.y += 20;
-                    break;
-                default:
-                    break;
-            }
+            events.push_back(event);
             
             if (event.type == SDL_QUIT) {
                 running = false;
@@ -109,11 +165,20 @@ int main(int argc, char* argv[])
         bool drawnReticle = false;
         
         
+        // MARK: - MATH: Position for reticle
         float posX = sin(float(player.x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
         reticle.x = player.x + (posX * 100);
         
         float posY = sin(float(player.y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
         reticle.y = player.y + (posY * 100);
+        
+        // MARK: - Rendering from scene objects
+        for(int object = 0; object < gameScene->objects.size(); object++) {
+            gameObject* selectedObject = gameScene->objects[object];
+            
+            selectedObject->executeUpdate(events);
+            
+        }
         
         for (int row = 0; row < appSettings.ROWS; ++row) {
             for(int column = 0; column < appSettings.COLUMNS; ++column) {
@@ -126,17 +191,28 @@ int main(int argc, char* argv[])
                 squareRect.x = (block_width + (appSettings.BORDER_WIDTH)) * column;  // X position
                 squareRect.y = (block_height + appSettings.BORDER_WIDTH) * row + (appSettings.BORDER_WIDTH/2);  // Y position
                 
-                if ((abs(squareRect.x - player.x) < block_width) && (abs(squareRect.y - player.y) < block_height) && !drawnPlayer) {
-                    SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
-                    drawnPlayer = true;
-                } else if ((abs(squareRect.x - cursor.x) < block_width) && (abs(squareRect.y - cursor.y) < block_height)&& !drawnCursor) { // Drawing mouse cursor
+                
+                //                if ((abs(squareRect.x - player.x) < block_width) && (abs(squareRect.y - player.y) < block_height) && !drawnPlayer) {
+                //                    SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
+                //                    drawnPlayer = true;
+                //                } else
+                if ((abs(squareRect.x - cursor.x) < block_width) && (abs(squareRect.y - cursor.y) < block_height)&& !drawnCursor) { // Drawing mouse cursor
                     SDL_SetRenderDrawColor(renderer, 255, 25, 125, 255);
                     drawnCursor = true;
-                }  else if ((abs(squareRect.x - reticle.x) < block_width) && (abs(squareRect.y - reticle.y) < block_height)&& !drawnReticle) { // Drawing mouse cursor
+                }  else if ((abs(squareRect.x - reticle.x) < block_width) && (abs(squareRect.y - reticle.y) < block_height)&& !drawnReticle) { // Drawing reticle cursor
                     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
                     drawnReticle = true;
                 } else {
                     SDL_SetRenderDrawColor(renderer, 75, 125, 125, 255);
+                }
+                
+                // MARK: - Rendering from scene objects
+                for(int object = 0; object < gameScene->objects.size(); object++) {
+                    gameObject* selectedObject = gameScene->objects[object];
+                    
+                    if ((abs(squareRect.x - selectedObject->x) < block_width) && (abs(squareRect.y - selectedObject->y) < block_height) && !drawnPlayer) {
+                        SDL_SetRenderDrawColor(renderer, selectedObject->color.red, selectedObject->color.green, selectedObject->color.blue, 255);
+                    }
                 }
                 
                 squareRect.w = block_width;  // Width
@@ -144,6 +220,12 @@ int main(int argc, char* argv[])
                 SDL_RenderFillRect(renderer, &squareRect);
             }
             std::cout << std::endl;
+        }
+        
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        
+        if (FRAME_DELAY > frameTime) {
+            SDL_Delay(FRAME_DELAY - frameTime);
         }
         
         SDL_RenderPresent(renderer);  // Present the renderer
