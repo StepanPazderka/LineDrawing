@@ -32,8 +32,6 @@ struct gameObject {
     void executeUpdate(const std::vector<SDL_Event>& events) {
         if (updateClosure) {  // Check if the closure is assigned
             updateClosure(*this, events);  // Execute the closure
-        } else {
-            std::cout << "Closure not set!\n";
         }
     }
 };
@@ -64,6 +62,8 @@ int main(int argc, char* argv[])
     std::vector<SDL_Event> events;
     
     AppSettings appSettings;
+    
+    // MARK: - Instantiate game objects
     Scene* gameScene = new Scene();
     gameObject* randomObject = new gameObject();
     gameScene->add(randomObject);
@@ -140,11 +140,15 @@ int main(int argc, char* argv[])
     // Simple main loop
     bool running = true;
     SDL_Event event;
+    std::vector<int> renderedObjects;
+
     while (running) {
         const int FPS = 60;
         const int FRAME_DELAY = 1000 / FPS;
         
         Uint32 frameStart = SDL_GetTicks();
+        
+        
         events.clear();
         while (SDL_PollEvent(&event)) {
             events.push_back(event);
@@ -180,6 +184,8 @@ int main(int argc, char* argv[])
             
         }
         
+        renderedObjects.clear();
+        
         for (int row = 0; row < appSettings.ROWS; ++row) {
             for(int column = 0; column < appSettings.COLUMNS; ++column) {
                 SDL_Rect squareRect;
@@ -191,11 +197,6 @@ int main(int argc, char* argv[])
                 squareRect.x = (block_width + (appSettings.BORDER_WIDTH)) * column;  // X position
                 squareRect.y = (block_height + appSettings.BORDER_WIDTH) * row + (appSettings.BORDER_WIDTH/2);  // Y position
                 
-                
-                //                if ((abs(squareRect.x - player.x) < block_width) && (abs(squareRect.y - player.y) < block_height) && !drawnPlayer) {
-                //                    SDL_SetRenderDrawColor(renderer, 15, 25, 125, 255);
-                //                    drawnPlayer = true;
-                //                } else
                 if ((abs(squareRect.x - cursor.x) < block_width) && (abs(squareRect.y - cursor.y) < block_height)&& !drawnCursor) { // Drawing mouse cursor
                     SDL_SetRenderDrawColor(renderer, 255, 25, 125, 255);
                     drawnCursor = true;
@@ -207,19 +208,26 @@ int main(int argc, char* argv[])
                 }
                 
                 // MARK: - Rendering from scene objects
-                for(int object = 0; object < gameScene->objects.size(); object++) {
-                    gameObject* selectedObject = gameScene->objects[object];
+                for(int objectIterator = 0; objectIterator < gameScene->objects.size(); objectIterator++) {
+                    gameObject* selectedObject = gameScene->objects[objectIterator];
+                    bool stopRendering = false;
                     
-                    if ((abs(squareRect.x - selectedObject->x) < block_width) && (abs(squareRect.y - selectedObject->y) < block_height) && !drawnPlayer) {
-                        SDL_SetRenderDrawColor(renderer, selectedObject->color.red, selectedObject->color.green, selectedObject->color.blue, 255);
+                    for (int iterator = 0; iterator < renderedObjects.size(); iterator++) {
+                        if (renderedObjects[iterator] == selectedObject->id) {
+                            stopRendering = true;
+                        }
                     }
+                    
+                    if (!stopRendering && (abs(squareRect.x - selectedObject->x) < block_width) && (abs(squareRect.y - selectedObject->y) < block_height) && !drawnPlayer) {
+                        SDL_SetRenderDrawColor(renderer, selectedObject->color.red, selectedObject->color.green, selectedObject->color.blue, 255);
+                        renderedObjects.push_back(selectedObject->id);
+                    }
+                    
+                    squareRect.w = block_width;  // Block width
+                    squareRect.h = block_height;  // Block height
+                    SDL_RenderFillRect(renderer, &squareRect);
                 }
-                
-                squareRect.w = block_width;  // Width
-                squareRect.h = block_height;  // Height
-                SDL_RenderFillRect(renderer, &squareRect);
             }
-            std::cout << std::endl;
         }
         
         Uint32 frameTime = SDL_GetTicks() - frameStart;
