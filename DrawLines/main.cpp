@@ -114,8 +114,7 @@ int main(int argc, char* argv[])
         return 1;
     }
     
-    SDL_Window* window = SDL_CreateWindow(
-                                          "Line Drawing",           // Window title
+    SDL_Window* window = SDL_CreateWindow("Line Drawing",           // Window title
                                           SDL_WINDOWPOS_CENTERED,  // Initial x position
                                           SDL_WINDOWPOS_CENTERED,  // Initial y position
                                           appSettings.SCREEN_WIDTH,                     // Width
@@ -123,7 +122,7 @@ int main(int argc, char* argv[])
                                           SDL_WINDOW_SHOWN         // Flags (you can use SDL_WINDOW_FULLSCREEN, etc.)
                                           );
     
-    if (window == nullptr) {
+    if (window == nullptr) { // If Window cant get initialized
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
         SDL_Quit();
         return 2;
@@ -170,18 +169,15 @@ int main(int argc, char* argv[])
         
         
         // MARK: - MATH: Position for reticle
-        float posX = sin(float(player.x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
-        reticle.x = player.x + (posX * 100);
+        float posX = sin(float(playerObject->x - cursor.x)/(appSettings.SCREEN_WIDTH/2));
+        reticle.x = playerObject->x + (posX * 100);
         
-        float posY = sin(float(player.y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
-        reticle.y = player.y + (posY * 100);
+        float posY = sin(float(playerObject->y - cursor.y)/(appSettings.SCREEN_HEIGHT/2));
+        reticle.y = playerObject->y + (posY * 100);
         
         // MARK: - Rendering from scene objects
-        for(int object = 0; object < gameScene->objects.size(); object++) {
-            gameObject* selectedObject = gameScene->objects[object];
-            
-            selectedObject->executeUpdate(events);
-            
+        for(gameObject* object: gameScene->objects) {
+            object->executeUpdate(events);
         }
         
         renderedObjects.clear();
@@ -208,6 +204,9 @@ int main(int argc, char* argv[])
                 }
                 
                 // MARK: - Rendering from scene objects
+                /**
+                 This function iterates through objects in a scene and renders them
+                 */
                 for(int objectIterator = 0; objectIterator < gameScene->objects.size(); objectIterator++) {
                     gameObject* selectedObject = gameScene->objects[objectIterator];
                     bool stopRendering = false;
